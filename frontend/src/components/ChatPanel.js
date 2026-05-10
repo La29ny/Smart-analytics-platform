@@ -1,6 +1,22 @@
-import React from "react";
+import React, {
+  useEffect,
+  useRef
+} from "react";
+
+
 
 function ChatPanel({ chatHistory }) {
+
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+
+    bottomRef.current?.scrollIntoView({
+      behavior: "smooth"
+    });
+
+  }, [chatHistory]);
+
   if (chatHistory.length === 0) {
     return null;
   }
@@ -20,6 +36,7 @@ function ChatPanel({ chatHistory }) {
           </div>
         </div>
       ))}
+      <div ref={bottomRef} />
     </div>
   );
 }

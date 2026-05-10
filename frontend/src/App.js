@@ -799,112 +799,569 @@ function App() {
 
 
 
-  const generateAIReport = () => {
+  const generateAIReport = async () => {
 
     const doc = new jsPDF();
 
-    let y = 20;
+    const pageWidth =
+      doc.internal.pageSize.width;
 
-    // 🔥 TITLE
-    doc.setFontSize(20);
-    doc.text("Smart Analytics AI Report", 20, y);
+    // ===== BACKGROUND HEADER =====
+    doc.setFillColor(20, 24, 39);
+    doc.rect(0, 0, pageWidth, 42, "F");
 
-    y += 14;
+    // ===== TITLE =====
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255,255,255);
 
-    // 🔥 DATASET
-    doc.setFontSize(12);
+    doc.setFontSize(24);
+
+    doc.text(
+      "Smart Analytics AI Report",
+      20,
+      24
+    );
+
+    doc.setFontSize(11);
+
+    doc.setTextColor(180,180,200);
+
+    doc.text(
+      `Generated on ${new Date().toLocaleString()}`,
+      20,
+      33
+    );
+
+    // ===== DATASET CARD =====
+    doc.setFillColor(139,92,246);
+
+    doc.roundedRect(
+      20,
+      52,
+      170,
+      24,
+      6,
+      6,
+      "F"
+    );
+
+    doc.setTextColor(255,255,255);
+
+    doc.setFontSize(14);
 
     doc.text(
       `Dataset: ${filename || "Unknown Dataset"}`,
+      28,
+      67
+    );
+
+    // ===== EXEC SUMMARY =====
+    let y = 95;
+
+    doc.setTextColor(30,30,30);
+
+    doc.setFontSize(18);
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.text(
+      "Executive Summary",
+      20,
+      y
+    );
+
+    y += 12;
+
+    doc.setFontSize(11);
+
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    const summary =
+      `This AI-generated report analyzed ${
+        datasetInfo.rows || 0
+      } rows across ${
+        datasetInfo.columns?.length || 0
+      } features. The system identified meaningful patterns, generated visualizations, and evaluated predictive modeling performance.`;
+
+    const summaryLines =
+      doc.splitTextToSize(
+        summary,
+        170
+      );
+
+    doc.text(
+      summaryLines,
+      20,
+      y
+    );
+
+    y += summaryLines.length * 7 + 16;
+
+    // ===== KPI SECTION =====
+    doc.setFontSize(18);
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.text(
+      "Analytics Snapshot",
       20,
       y
     );
 
     y += 14;
 
-    // 🔥 EXECUTIVE SUMMARY
-    doc.setFontSize(16);
-    doc.text("Executive Summary", 20, y);
+    const kpis = [
+      {
+        label: "Rows",
+        value: datasetInfo.rows || 0
+      },
+      {
+        label: "Columns",
+        value:
+          datasetInfo.columns?.length || 0
+      },
+      {
+        label: "Charts",
+        value: charts.length
+      }
+    ];
 
-    y += 10;
+    kpis.forEach((kpi, i) => {
 
-    doc.setFontSize(11);
+      const x =
+        20 + (i * 58);
 
-    const summary =
-      `This report analyzes ${
-        datasetInfo.rows || 0
-      } rows across ${
-        datasetInfo.columns?.length || 0
-      } features. AI-assisted analytics identified patterns, relationships, and trends from the uploaded dataset.`;
+      doc.setFillColor(245,245,250);
 
-    const summaryLines =
-      doc.splitTextToSize(summary, 170);
+      doc.roundedRect(
+        x,
+        y,
+        50,
+        30,
+        5,
+        5,
+        "F"
+      );
 
-    doc.text(summaryLines, 20, y);
+      doc.setFontSize(10);
 
-    y += summaryLines.length * 7 + 10;
+      doc.setTextColor(120,120,140);
 
-    // 🔥 KEY FINDINGS
-    doc.setFontSize(16);
-    doc.text("Key Findings", 20, y);
+      doc.text(
+        kpi.label,
+        x + 6,
+        y + 10
+      );
 
-    y += 10;
+      doc.setFontSize(18);
 
-    doc.setFontSize(11);
+      doc.setTextColor(40,40,60);
 
-    const findings = chatHistory
-      .slice(-6)
-      .map(m => `• ${m.text}`);
-
-    findings.forEach(f => {
-      const lines = doc.splitTextToSize(f, 170);
-
-      doc.text(lines, 24, y);
-
-      y += lines.length * 7 + 6;
+      doc.text(
+        String(kpi.value),
+        x + 6,
+        y + 22
+      );
     });
 
-    // 🔥 RECOMMENDATIONS
-    y += 8;
+    y += 46;
 
-    doc.setFontSize(16);
-    doc.text("Recommendations", 20, y);
+    // ===== FINDINGS =====
+    doc.setFontSize(18);
 
-    y += 10;
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.setTextColor(30,30,30);
+
+    doc.text(
+      "Key Findings",
+      20,
+      y
+    );
+
+    y += 12;
 
     doc.setFontSize(11);
 
+    doc.setFont(
+      "helvetica",
+      "normal"
+    );
+
+    const findings =
+      chatHistory
+        .slice(-10)
+        .map(m => m.text)
+
+        // remove weird unicode
+        .map(t =>
+          t.replace(/[^\x00-\x7F]/g, "")
+        )
+
+        // remove failed messages
+        .filter(t =>
+          t &&
+          !t.toLowerCase().includes("failed") &&
+          !t.includes("Ø") &&
+          !t.includes("❌")
+        )
+
+        // make text cleaner
+        .map(t => {
+
+          if (
+            t.toLowerCase().includes("bar chart")
+          ) {
+            return `AI generated a comparative bar chart visualization for ${t.replace("bar chart of", "")}.`;
+          }
+
+          if (
+            t.toLowerCase().includes("pie chart")
+          ) {
+            return `AI generated a proportional distribution analysis using ${t.replace("pie chart of", "")}.`;
+          }
+
+          return t;
+        })
+
+        .slice(-6);
+
+    findings.forEach(f => {
+
+      doc.setFillColor(248,250,252);
+
+      doc.roundedRect(
+        20,
+        y - 5,
+        170,
+        14,
+        4,
+        4,
+        "F"
+      );
+
+      const lines =
+        doc.splitTextToSize(
+          `• ${f}`,
+          160
+        );
+
+      doc.text(
+        lines,
+        26,
+        y + 3
+      );
+
+      y += lines.length * 7 + 10;
+    });
+
+
+
+
+    // ===== MODEL PERFORMANCE =====
+
+    doc.setFontSize(18);
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.text(
+      "Model Performance",
+      20,
+      y
+    );
+
+    y += 14;
+
+    doc.setFillColor(248,250,252);
+
+    doc.roundedRect(
+      20,
+      y - 6,
+      170,
+      34,
+      5,
+      5,
+      "F"
+    );
+
+    doc.setFontSize(11);
+
+    doc.setTextColor(60);
+
+    doc.text(
+      `Linear Regression R² Score: ${
+        trainResult?.linear_accuracy || "N/A"
+      }`,
+      28,
+      y + 4
+    );
+
+    doc.text(
+      `Neural Network Loss: ${
+        trainResult?.nn_loss || "N/A"
+      }`,
+      28,
+      y + 16
+    );
+
+    doc.text(
+      `Best Performing Model: ${
+        parseFloat(
+          trainResult?.linear_accuracy || 0
+        ) > 0.5
+          ? "Linear Regression"
+          : "Neural Network"
+      }`,
+      28,
+      y + 28
+    );
+
+    y += 50;
+
+
+
+
+
+
+
+    // ===== GENERATED CHARTS =====
+
+    if (charts.length > 0) {
+
+      if (y > 180) {
+        doc.addPage();
+        y = 30;
+      }
+
+      doc.setFontSize(18);
+
+      doc.setFont(
+        "helvetica",
+        "bold"
+      );
+
+      doc.setTextColor(30,30,30);
+
+      doc.text(
+        "Generated Visualizations",
+        20,
+        y
+      );
+
+      y += 16;
+
+      const latestCharts =
+        charts.slice(0, 2);
+
+      for (const chart of latestCharts) {
+
+        const canvas =
+          document.querySelector(
+            `#chart-${chart.id} canvas`
+          );
+
+        if (!canvas) continue;
+
+        const imgData =
+          canvas.toDataURL(
+            "image/png",
+            1.0
+          );
+
+        doc.setFontSize(12);
+
+        doc.setTextColor(70);
+
+        doc.text(
+          `${chart.type.toUpperCase()} — ${chart.x}${
+            chart.y
+              ? ` vs ${chart.y}`
+              : ""
+          }`,
+          20,
+          y
+        );
+
+        y += 8;
+
+        doc.addImage(
+          imgData,
+          "PNG",
+          20,
+          y,
+          170,
+          70
+        );
+
+        y += 84;
+      }
+    }
+
+
+
+        // ===== AI PREDICTIONS =====
+
+    if (chatHistory.length > 0) {
+
+      const predictionMessages =
+        chatHistory.filter(msg => {
+
+          const t =
+            msg.text?.toLowerCase() || "";
+
+          return (
+            t.includes("prediction") ||
+            t.includes("predicted") ||
+            t.includes("price")
+          );
+        });
+
+      if (predictionMessages.length > 0) {
+
+        if (y > 220) {
+          doc.addPage();
+          y = 30;
+        }
+
+        doc.setFontSize(18);
+
+        doc.setFont(
+          "helvetica",
+          "bold"
+        );
+
+        doc.text(
+          "AI Predictions",
+          20,
+          y
+        );
+
+        y += 14;
+
+        predictionMessages
+          .slice(-4)
+          .forEach(msg => {
+
+            doc.setFillColor(
+              240,
+              249,
+              255
+            );
+
+            doc.roundedRect(
+              20,
+              y - 5,
+              170,
+              18,
+              4,
+              4,
+              "F"
+            );
+
+            const clean =
+              msg.text
+                .replace(/[^\x00-\x7F]/g, "");
+
+            const lines =
+              doc.splitTextToSize(
+                `• ${clean}`,
+                158
+              );
+
+            doc.text(
+              lines,
+              26,
+              y + 4
+            );
+
+            y +=
+              lines.length * 7 + 12;
+          });
+      }
+    }
+
+    // ===== RECOMMENDATIONS =====
+    y += 8;
+
+    doc.setFontSize(18);
+
+    doc.setFont(
+      "helvetica",
+      "bold"
+    );
+
+    doc.text(
+      "Recommendations",
+      20,
+      y
+    );
+
+    y += 12;
+
     const recommendations = [
-      "Focus on highly correlated variables for prediction tasks.",
-      "Review columns with detected anomalies or missing values.",
-      "Use generated visualizations to identify business trends.",
-      "Consider training additional ML models for stronger predictions."
+      "Focus on strongly correlated variables for prediction.",
+      "Use visual analytics to detect trends and anomalies.",
+      "Train additional models to improve predictive accuracy.",
+      "Review missing or inconsistent dataset values."
     ];
+
+    doc.setFontSize(11);
 
     recommendations.forEach(r => {
 
-      const lines = doc.splitTextToSize(
-        `• ${r}`,
-        170
+      const lines =
+        doc.splitTextToSize(
+          `• ${r}`,
+          160
+        );
+
+      doc.text(
+        lines,
+        26,
+        y
       );
 
-      doc.text(lines, 24, y);
-
-      y += lines.length * 7 + 6;
+      y += lines.length * 7 + 8;
     });
 
-    // 🔥 FOOTER
-    y += 10;
+    // ===== FOOTER =====
+    doc.setDrawColor(220);
+
+    doc.line(
+      20,
+      280,
+      190,
+      280
+    );
 
     doc.setFontSize(10);
+
+    doc.setTextColor(120);
 
     doc.text(
       "Generated automatically by Smart Analytics AI",
       20,
-      y
+      288
     );
 
-    doc.save("AI-Analytics-Report.pdf");
+    doc.save(
+      "AI-Analytics-Report.pdf"
+    );
   };
 
   const sendOTP = async () => {

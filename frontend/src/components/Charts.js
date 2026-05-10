@@ -1,4 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef
+} from "react";
 
 import {
   Chart as ChartJS,
@@ -139,6 +143,27 @@ function Charts({
   const [columns, setColumns] = useState([]);
   const [query, setQuery] = useState("");
   const [columnProfiles, setColumnProfiles] = useState({});
+
+    const exportChart = (chartId) => {
+
+    const canvas =
+      document.querySelector(
+        `#chart-${chartId} canvas`
+      );
+
+    if (!canvas) return;
+
+    const link =
+      document.createElement("a");
+
+    link.download =
+      `chart-${chartId}.png`;
+
+    link.href =
+      canvas.toDataURL("image/png");
+
+    link.click();
+  };
 
   const targetName = datasetInfo.target || "target variable";
 
@@ -340,11 +365,21 @@ function Charts({
                   📌 Pin
                 </button>
 
+                <button
+                  className="pin-btn export-btn"
+                  onClick={() => exportChart(chart.id)}
+                >
+                  ⬇ PNG
+                </button>
+
                 <h4>
                   {chart.type.toUpperCase()} — {chart.x}
                   {chart.y && ` vs ${chart.y}`}
                 </h4>
-                <div className="chart-render">
+                <div
+                  className="chart-render"
+                  id={`chart-${chart.id}`}
+                >
                   {chart.data.chartType === "bar" && (
                     <Bar
                       options={chartOptions}

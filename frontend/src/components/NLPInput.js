@@ -158,6 +158,19 @@ function NLPInput({
           ) {
             chartType = "histogram";
           }
+
+          const normalizeColumn = (col) => {
+
+            if (!col) return col;
+
+            if (col.endsWith("room")) {
+              return col + "s";
+            }
+
+            return col;
+          };
+
+
           const vsIndex =
             words.indexOf("vs");
 
@@ -166,8 +179,13 @@ function NLPInput({
 
           if (vsIndex !== -1) {
 
-            x = words[vsIndex - 1];
-            y = words[vsIndex + 1];
+            x = normalizeColumn(
+              words[vsIndex - 1]
+            );
+
+            y = normalizeColumn(
+              words[vsIndex + 1]
+            );
           }
 
           else {
@@ -176,7 +194,9 @@ function NLPInput({
               words.indexOf("of");
 
             if (ofIndex !== -1) {
-              x = words[ofIndex + 1];
+              x = normalizeColumn(
+                words[ofIndex + 1]
+              );
             }
           }
 
