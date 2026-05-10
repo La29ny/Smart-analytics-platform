@@ -168,7 +168,7 @@ def train_model():
         return jsonify(error(str(e), 500)), 500
 
 
-
+@model_bp.route("/predict", methods=["POST"])
 @model_bp.route("/predict", methods=["POST"])
 def predict():
 

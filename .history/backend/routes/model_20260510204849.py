@@ -72,20 +72,6 @@ def train_model():
         y_mean = y.mean()
         y_std = y.std()
 
-
-        target_stats = {
-            "mean": float(y_mean),
-            "std": float(y_std)
-        }
-
-        target_stats_path = os.path.join(
-            MODEL_FOLDER,
-            "target_stats.pkl"
-        )
-
-        with open(target_stats_path, "wb") as f:
-            pickle.dump(target_stats, f)
-
         y = (y - y_mean) / y_std
 
         # Early validation
@@ -103,10 +89,6 @@ def train_model():
 
         # Save scaler
         scaler_path = os.path.join(MODEL_FOLDER, "scaler.pkl")
-
-
-        
-
         with open(scaler_path, "wb") as f:
             pickle.dump(scaler, f)
 
@@ -139,11 +121,6 @@ def train_model():
             "features.pkl"
         )
 
-        target_stats_path = os.path.join(
-            MODEL_FOLDER,
-            "target_stats.pkl"
-        )
-
         with open(features_path, "wb") as f:
             pickle.dump(
                 list(X.columns),
@@ -168,103 +145,64 @@ def train_model():
         return jsonify(error(str(e), 500)), 500
 
 
-
 @model_bp.route("/predict", methods=["POST"])
 def predict():
-
     data = request.json
     input_data = data.get("input")
 
     if not input_data:
-        return jsonify(
-            error("Input data required", 400)
-        ), 400
+        return jsonify(error("Input data required", 400)), 400
 
-    model_path = os.path.join(
-        MODEL_FOLDER,
-        "model.pkl"
-    )
+    model_path = os.path.join(MODEL_FOLDER, "model.pkl")
 
     features_path = os.path.join(
         MODEL_FOLDER,
         "features.pkl"
     )
-
-    scaler_path = os.path.join(
-        MODEL_FOLDER,
-        "scaler.pkl"
-    )
-
-    target_stats_path = os.path.join(
-        MODEL_FOLDER,
-        "target_stats.pkl"
-    )
+    scaler_path = os.path.join(MODEL_FOLDER, "scaler.pkl")
 
     if not os.path.exists(model_path):
-        return jsonify(
-            error("Model not trained yet", 400)
-        ), 400
+        return jsonify(error("Model not trained yet", 400)), 400
 
     if not os.path.exists(scaler_path):
-        return jsonify(
-            error("Scaler not found", 400)
-        ), 400
+        return jsonify(error("Scaler not found", 400)), 400
 
     try:
-
-        # Load model
+        # Load model and scaler
         with open(model_path, "rb") as f:
             model = pickle.load(f)
 
-        # Load scaler
         with open(scaler_path, "rb") as f:
             scaler = pickle.load(f)
 
+        # Convert input to DataFrame
         # Load expected features
-        with open(features_path, "rb") as f:
-            expected_features = pickle.load(f)
+with open(features_path, "rb") as f:
+    expected_features = pickle.load(f)
 
-        # Load target stats
-        with open(target_stats_path, "rb") as f:
-            target_stats = pickle.load(f)
+# Build ordered input
+ordered_input = {}
 
-        # Build ordered input
-        ordered_input = {}
+for feature in expected_features:
+    ordered_input[feature] = float(
+        input_data.get(feature, 0)
+    )
 
-        for feature in expected_features:
-            ordered_input[feature] = float(
-                input_data.get(feature, 0)
-            )
-
-        # Convert to dataframe
-        df = pd.DataFrame([ordered_input])
+# Convert to DataFrame
+df = pd.DataFrame([ordered_input])
 
         # Scale input
         df_scaled = scaler.transform(df)
 
-        # Predict normalized value
+        # Make prediction
         prediction = model.predict(df_scaled)
 
-        # Reverse normalization
-        prediction_real = (
-            prediction[0] *
-            target_stats["std"]
-        ) + target_stats["mean"]
-
-        logger.info(
-            f"Prediction made: {prediction_real}"
-        )
+        logger.info(f"Prediction made: {prediction.tolist()}")
 
         return jsonify(success({
-            "prediction": float(prediction_real)
+            "prediction": prediction.tolist()[0]   # Return single value, not list
         }))
 
     except Exception as e:
-
-        logger.error(
-            f"Prediction error: {str(e)}"
-        )
-
-        return jsonify(
-            error(str(e), 500)
-        ), 500
+        logger.error(f"Prediction error: {str(e)}")
+        return jsonify(error(str(e), 500)), 500

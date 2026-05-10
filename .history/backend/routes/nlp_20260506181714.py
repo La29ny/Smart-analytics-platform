@@ -108,48 +108,24 @@ def detect_columns(text, known_columns):
 
     detected = []
 
-    # 🔥 check full phrase first
-    for col in known_columns:
+    words = text.split()
 
-        if col.lower() in text:
-            detected.append(col)
-            continue
-
-    # 🔥 tokenize
-    words = re.findall(r"\w+", text)
-
+    # 🔥 semantic matching first
     for word in words:
 
-        # skip useless NLP words
-        if word in [
-            "average", "mean", "sum",
-            "total", "show", "find",
-            "where", "greater", "less",
-            "than", "chart", "plot",
-            "graph"
-        ]:
-            continue
-
-        # semantic match
         semantic = semantic_match(word, known_columns)
 
         if semantic:
             detected.append(semantic)
             continue
 
-        # fuzzy fallback
-        match, score, _ = process.extractOne(
-            word,
-            known_columns
-        )
+        # 🔥 fuzzy fallback
+        match, score, _ = process.extractOne(word, known_columns)
 
-        if score > 88:
+        if score > 80:
             detected.append(match)
 
-    # 🔥 remove duplicates
-    detected = list(dict.fromkeys(detected))
-
-    return detected
+    return list(set(detected))
 
 def extract_condition(text, columns):
     text = text.lower()

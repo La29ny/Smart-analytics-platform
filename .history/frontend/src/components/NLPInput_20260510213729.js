@@ -78,9 +78,6 @@ function NLPInput({
 
     try {
       setLoading(true);
-      await new Promise(resolve =>
-        setTimeout(resolve, 500)
-      );
       
       const lower = text.toLowerCase().trim();
 
@@ -150,9 +147,7 @@ function NLPInput({
                 `⚠️ ${chartType.toUpperCase()} charts require two columns.\nTry:\n"bar chart of area vs bedrooms"`
             });
 
-            setTimeout(() => {
-              setLoading(false);
-            }, 10);
+            setLoading(false);
 
             return;
           }

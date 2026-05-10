@@ -78,9 +78,6 @@ function NLPInput({
 
     try {
       setLoading(true);
-      await new Promise(resolve =>
-        setTimeout(resolve, 500)
-      );
       
       const lower = text.toLowerCase().trim();
 
@@ -152,7 +149,7 @@ function NLPInput({
 
             setTimeout(() => {
               setLoading(false);
-            }, 10);
+            }, 2000);
 
             return;
           }

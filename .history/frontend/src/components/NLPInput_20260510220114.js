@@ -152,7 +152,7 @@ function NLPInput({
 
             setTimeout(() => {
               setLoading(false);
-            }, 10);
+            }, 4000);
 
             return;
           }

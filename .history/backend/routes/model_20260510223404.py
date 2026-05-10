@@ -105,7 +105,7 @@ def train_model():
         scaler_path = os.path.join(MODEL_FOLDER, "scaler.pkl")
 
 
-        
+        )
 
         with open(scaler_path, "wb") as f:
             pickle.dump(scaler, f)
@@ -168,7 +168,7 @@ def train_model():
         return jsonify(error(str(e), 500)), 500
 
 
-
+@model_bp.route("/predict", methods=["POST"])
 @model_bp.route("/predict", methods=["POST"])
 def predict():
 

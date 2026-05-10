@@ -79,11 +79,11 @@ function Predict({ filename, datasetInfo = {} }) {
 
     if (data.intent === "aggregate") {
 
-      const cleanText =
-        `📊 ${data.operation.toUpperCase()} of ${data.column} = ${Number(data.result).toFixed(2)}`;
+    const cleanText =
+      `📊 ${data.operation.toUpperCase()} of ${data.column} = ${Number(data.result).toFixed(2)}`;
 
-      setNlpResult(cleanText);
-    }
+    setNlpResult(cleanText);
+  }
     else {
       setNlpResult("Unsupported query");
     }
