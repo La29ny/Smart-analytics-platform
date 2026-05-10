@@ -8,8 +8,7 @@ import seaborn as sns
 from config import UPLOAD_FOLDER
 from routes.nlp import extract_multiple_conditions, detect_columns
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+
 
 visualize_bp = Blueprint("visualize", __name__)
 

@@ -44,8 +44,35 @@ def train_model():
         # Keep only numeric columns
         df = df.select_dtypes(include=["number"])
 
+        drop_cols = [
+            col for col in df.columns
+            if "id" in col.lower()
+        ]
+
+        df = df.drop(columns=drop_cols, errors="ignore")
+
         X = df.drop(target, axis=1)
+
+        # Keep only useful correlated features
+
+        correlations = X.corrwith(df[target]).abs()
+
+        useful_cols = correlations[correlations > 0.1].index
+
+        X = X[useful_cols]
+
+        X = X.fillna(X.mean())
+
+        if X.shape[1] == 0:
+            return jsonify(error("No useful features found", 400)), 400
+
+
         y = df[target]
+
+        y_mean = y.mean()
+        y_std = y.std()
+
+        y = (y - y_mean) / y_std
 
         # Early validation
         if len(X) < 5:
@@ -82,7 +109,7 @@ def train_model():
         ])
 
         nn_model.compile(optimizer='adam', loss='mse')
-        nn_model.fit(X_train, y_train, epochs=50, verbose=0)
+        nn_model.fit(X_train, y_train, epochs=20, verbose=0)
 
         # Evaluate NN
         nn_score = nn_model.evaluate(X_test, y_test, verbose=0)

@@ -1,7 +1,11 @@
 import React from "react";
 
 function ChatPanel({ chatHistory }) {
-  return (
+  if (chatHistory.length === 0) {
+    return null;
+  }
+
+  return (  
     <div className="chat-panel">
       {chatHistory.map((msg, i) => (
         <div key={i} className={`chat-msg ${msg.role}`}>

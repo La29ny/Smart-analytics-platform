@@ -13,7 +13,12 @@ const getColumnLabel = (index) => {
 
 
 
-function Preview({ filename, inline = false }) {
+function Preview({
+  filename,
+  inline = false,
+  dashboardWidgets = [],
+  setDashboardWidgets
+}) {
   const [sortConfig, setSortConfig] = useState({
     column: null,
     direction: "asc"
@@ -34,6 +39,8 @@ function Preview({ filename, inline = false }) {
   const [datasetProfile, setDatasetProfile] = useState(null);
 
   const [autoInsights, setAutoInsights] = useState([]);
+
+  const [liveInsights, setLiveInsights] = useState([]);
   
   const handleCellChange = (rowIndex, col, value) => {
     const updated = [...allData];
@@ -157,6 +164,80 @@ function Preview({ filename, inline = false }) {
     }
   }, [toast]);
 
+
+  const generateLiveInsights = () => {
+
+    if (!allData.length) return;
+
+    const insights = [];
+
+    const columns = Object.keys(allData[0]);
+
+    columns.forEach(col => {
+
+      const nums = allData
+        .map(r => Number(r[col]))
+        .filter(v => !isNaN(v));
+
+      if (nums.length > 3) {
+
+        const avg =
+          nums.reduce((a, b) => a + b, 0) /
+          nums.length;
+
+        const max = Math.max(...nums);
+        const min = Math.min(...nums);
+
+        // 🔥 anomaly
+        if (max > avg * 2) {
+          insights.push({
+            type: "warning",
+            message:
+              `⚠️ ${col} contains unusually high values`
+          });
+        }
+
+        // 🔥 spread
+        if (max - min > avg) {
+          insights.push({
+            type: "info",
+            message:
+              `📈 ${col} shows high variance`
+          });
+        }
+
+      }
+
+    });
+
+    // 🔥 correlation detection
+    const numericCols = columns.filter(col => {
+
+      return allData.some(
+        r => !isNaN(Number(r[col]))
+      );
+
+    });
+
+    if (numericCols.length >= 2) {
+
+      insights.push({
+        type: "success",
+        message:
+          `🔗 Relationships detected between numeric features`
+      });
+
+    }
+
+    setLiveInsights(insights);
+  };
+
+  useEffect(() => {
+
+    generateLiveInsights();
+
+  }, [allData]);
+
   
 
   // 🔥 Reset + initial load
@@ -257,6 +338,8 @@ function Preview({ filename, inline = false }) {
     return val;
   };
 
+  
+
 
 
   return (
@@ -319,6 +402,41 @@ function Preview({ filename, inline = false }) {
         </div>
       )}
 
+
+
+      {liveInsights.length > 0 && (
+
+        <div className="live-insights-panel">
+
+          <div className="live-header">
+
+            <h3>⚡ Real-Time Insights</h3>
+
+            <span className="live-pulse">
+              LIVE
+            </span>
+
+          </div>
+
+          <div className="insights-grid">
+
+            {liveInsights.map((insight, i) => (
+
+              <div
+                key={i}
+                className={`insight-card ${insight.type}`}
+              >
+                {insight.message}
+              </div>
+
+            ))}
+
+          </div>
+
+        </div>
+
+      )}
+
       {autoInsights.length > 0 && (
 
         <div className="insights-panel">
@@ -333,7 +451,28 @@ function Preview({ filename, inline = false }) {
                 key={i}
                 className={`insight-card ${insight.type}`}
               >
-                {insight.message}
+                <div className="insight-content">
+                  {insight.message}
+
+                  <button
+                    className="mini-pin-btn"
+                    onClick={() => {
+
+                      const widget = {
+                        id: Date.now(),
+                        type: "insight",
+                        insight
+                      };
+
+                      setDashboardWidgets(prev => [
+                        widget,
+                        ...prev
+                      ]);
+                    }}
+                  >
+                    📌
+                  </button>
+                </div>
               </div>
 
             ))}

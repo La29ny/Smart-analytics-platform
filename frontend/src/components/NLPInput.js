@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
 import SmartSuggestions from "./SmartSuggestions";
 
-function NLPInput({ filename, onTrain, dashboardMode, onResponse, lastResult }) {
+function NLPInput({
+  filename,
+  onTrain,
+  dashboardMode,
+  onResponse,
+  lastResult,
+
+  dashboardWidgets = [],
+  setDashboardWidgets,
+
+  charts = []
+}) {
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -51,7 +62,11 @@ function NLPInput({ filename, onTrain, dashboardMode, onResponse, lastResult }) 
 
   const handleNLP = async () => {
     if (!filename) {
-      setToast("Please upload a dataset first");
+
+      setToast(
+        "⚠️ Please upload a dataset before using AI/NLP commands"
+      );
+
       return;
     }
     if (!text.trim()) return;
@@ -66,67 +81,179 @@ function NLPInput({ filename, onTrain, dashboardMode, onResponse, lastResult }) 
       
       const lower = text.toLowerCase().trim();
 
-      if (
-        lower.includes("plot") ||
-        lower.includes("graph") ||
-        lower.includes("visualize")
-      ) {
+      const chartKeywords = [
+        "chart",
+        "plot",
+        "graph",
+        "histogram",
+        "scatter",
+        "line",
+        "bar",
+        "pie",
+        "visualize"
+      ];
 
-        if (!lastResult?.data?.length) {
+      const wantsChart =
+        chartKeywords.some(k =>
+          lower.includes(k)
+        );
 
-          onResponse?.({
-            role: "system",
-            type: "text",
-            text: "⚠️ No previous table result to visualize"
-          });
+        
+      if (wantsChart) {
 
-          return;
-        }
+        
 
         try {
 
-          const cols = Object.keys(lastResult.data[0]);
+          const words = lower.split(" ");
+
+          let chartType = "histogram";
+
+          if (lower.includes("scatter")) {
+            chartType = "scatter";
+          }
+
+          else if (
+            lower.includes("line")
+          ) {
+            chartType = "line";
+          }
+
+          else if (
+            lower.includes("pie")
+          ) {
+            chartType = "pie";
+          }
+
+          else if (lower.includes("histogram")) {
+            chartType = "histogram";
+          }
+
+          else if (lower.includes("bar")) {
+            chartType = "bar";
+          }
+
+          const numericOnlyCharts = ["pie", "bar"];
+
+          if (
+            numericOnlyCharts.includes(chartType) &&
+            !lower.includes("vs")
+          ) {
+
+            onResponse?.({
+              role: "system",
+              type: "text",
+              text:
+                `⚠️ ${chartType.toUpperCase()} charts require two columns.\nTry:\n"bar chart of area vs bedrooms"`
+            });
+
+            setLoading(false);
+
+            return;
+          }
+
+          if (
+            chartType === "bar" &&
+            !lower.includes("vs")
+          ) {
+            chartType = "histogram";
+          }
+          const vsIndex =
+            words.indexOf("vs");
+
+          let x = null;
+          let y = null;
+
+          if (vsIndex !== -1) {
+
+            x = words[vsIndex - 1];
+            y = words[vsIndex + 1];
+          }
+
+          else {
+
+            const ofIndex =
+              words.indexOf("of");
+
+            if (ofIndex !== -1) {
+              x = words[ofIndex + 1];
+            }
+          }
+
+          if (!x) {
+
+            onResponse?.({
+              role: "system",
+              type: "text",
+              text:
+                "⚠️ Could not detect chart columns"
+            });
+
+            setLoading(false);
+
+            return;
+          }
 
           const res = await fetch(
             "http://127.0.0.1:5000/visualize",
             {
               method: "POST",
+
               headers: {
-                "Content-Type": "application/json"
+                "Content-Type":
+                  "application/json"
               },
+
               body: JSON.stringify({
                 filename,
-                chart_type: "bar",
-                x: cols[0],
-                y: cols[1]
+                chart_type: chartType,
+                x,
+                y
               })
             }
           );
 
-          const chartData = await res.json();
+          const chartData =
+            await res.json();
 
           onResponse?.({
             role: "system",
             type: "chart",
-            text: `📊 Visualization of ${cols[0]} vs ${cols[1]}`,
+
+            text:
+              `📊 ${chartType.toUpperCase()} chart generated for ${x}${y ? ` vs ${y}` : ""}`,
+
             data: chartData,
 
             context: {
-              lastChartType: chartData.chartType,
-              lastColumns: cols
+              lastChartType:
+                chartType,
+
+              lastColumns:
+                [x, y].filter(Boolean)
             }
           });
 
-        } catch {
+          setLoading(false);
+
+          return;
+
+        } catch (err) {
+
+          console.error(err);
 
           onResponse?.({
             role: "system",
             type: "text",
-            text: "❌ Failed to generate visualization"
-          });
-        }
 
-        return;
+            text:
+              "❌ Failed to generate chart"
+          });
+
+          setLoading(false);
+
+          return;
+        }
       }
 
       if (lower.includes("compare")) {
@@ -470,6 +597,25 @@ function NLPInput({ filename, onTrain, dashboardMode, onResponse, lastResult }) 
                   {ex}
                 </button>
               ))}
+
+              <button
+                className="ai-chip"
+                onClick={() =>
+                  setText("Build a sales dashboard")
+                }
+              >
+                📊 Sales Dashboard
+              </button>
+
+              <button
+                className="ai-chip"
+                onClick={() =>
+                  setText("Create performance workspace")
+                }
+              >
+                🚀 Performance Workspace
+              </button>
+
               <button
                 className="ai-chip"
                 onClick={() => setText("find marks where study_hours > 2")}

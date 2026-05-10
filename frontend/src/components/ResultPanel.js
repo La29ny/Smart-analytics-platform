@@ -109,42 +109,203 @@ function ResultPanel({ result }) {
     // 🔥 UNIVERSAL CHART VIEW
     if (result.type === "chart") {
 
-        const chartData = {
-            labels: result.data.labels || [],
-            datasets: result.data.datasets || []
+        const chartType =
+            result.data.chartType || "bar";
+
+        const styledDatasets =
+            (result.data.datasets || []).map(
+                (ds, i) => ({
+
+                ...ds,
+
+                backgroundColor:
+
+                    chartType === "pie"
+
+                    ? [
+                        "#8b5cf6",
+                        "#06b6d4",
+                        "#ec4899",
+                        "#10b981",
+                        "#f59e0b",
+                        "#3b82f6",
+                        "#ef4444"
+                    ]
+
+                    : "rgba(139,92,246,0.75)",
+
+                borderColor:
+
+                    chartType === "pie"
+
+                    ? "#111827"
+
+                    : "#a855f7",
+
+                borderWidth: 2,
+
+                pointBackgroundColor:
+                    "#c084fc",
+
+                pointBorderColor:
+                    "#ffffff",
+
+                pointRadius: 5,
+
+                tension: 0.35,
+
+                fill:
+                    chartType === "line",
+
+                maxBarThickness: 18,
+                categoryPercentage: 0.7,
+                barPercentage: 0.8,
+
+                hoverBackgroundColor:
+                    "#c084fc"
+            }));
+
+        const limitedLabels =
+            (result.data.labels || []).slice(0, 25);
+
+            const limitedDatasets =
+            styledDatasets.map(ds => ({
+
+                ...ds,
+
+                data:
+                (ds.data || []).slice(0, 25)
+            }));
+
+            const chartData = {
+
+                labels: limitedLabels,
+
+                datasets: limitedDatasets
+            };
+
+        
+
+        const commonOptions = {
+
+            responsive: true,
+
+            maintainAspectRatio: false,
+            plugins: {
+
+                legend: {
+                    labels: {
+                        color: "#e5e7eb"
+                    }
+                }
+            },
+
+            scales: {
+
+                x: {
+                    ticks: {
+                        color: "#9ca3af"
+                    },
+
+                    grid: {
+                        color:
+                            "rgba(255,255,255,0.05)"
+                    }
+                },
+
+                y: {
+                    ticks: {
+                        color: "#9ca3af"
+                    },
+
+                    grid: {
+                        color:
+                            "rgba(255,255,255,0.05)"
+                    }
+                }
+            }
         };
 
-        const chartType = result.data.chartType || "bar";
-
         return (
-            <div className="chart-container">
 
-                <button
-                    className="btn-outline"
-                    onClick={exportChart}
-                    style={{ marginBottom: 12 }}
+            <div
+                className="viz-card"
+                style={{
+                    overflow: "hidden",
+                    display: "flex",
+                    flexDirection: "column"
+                }}
                 >
-                    ⬇ Export PNG
-                </button>
 
+                <div className="viz-header">
 
-                <h4>{result.text}</h4>
+                    <h4>{result.text}</h4>
 
-                {chartType === "bar" && (
-                    <Bar data={chartData} />
-                )}
+                    <button
+                        className="btn-outline"
+                        onClick={exportChart}
+                    >
+                        ⬇ Export PNG
+                    </button>
 
-                {chartType === "line" && (
-                    <Line data={chartData} />
-                )}
+                </div>
 
-                {chartType === "pie" && (
-                    <Pie data={chartData} />
-                )}
+                <div
+                    className="viz-chart"
+                    style={{
+                        height: "320px",
+                        width: "100%",
+                        position: "relative",
+                        overflow: "hidden"
+                    }}
+                    >
 
-                {chartType === "scatter" && (
-                    <Scatter data={chartData} />
-                )}
+                        {chartType === "bar" && (
+                            <Bar
+                                data={chartData}
+                                options={{
+                                    ...commonOptions,
+                                    responsive: true,
+                                    maintainAspectRatio: false
+                                }}
+                                />
+                        )}
+
+                    {chartType === "line" && (
+                        <Line
+                                data={chartData}
+                                options={{
+                                    ...commonOptions,
+                                    responsive: true,
+                                    maintainAspectRatio: false
+                                }}
+                                />
+                        )}
+
+                    {chartType === "pie" && (
+                        <Pie
+                                data={chartData}
+                                options={{
+                                    ...commonOptions,
+                                    responsive: true,
+                                    maintainAspectRatio: false
+                                }}
+                                />
+                        )}
+
+                    {chartType === "scatter" && (
+                        <Scatter
+                                data={chartData}
+                                options={{
+                                    ...commonOptions,
+                                    responsive: true,
+                                    maintainAspectRatio: false
+                                }}
+                                />
+                        )}
+
+                </div>
+
             </div>
         );
     }

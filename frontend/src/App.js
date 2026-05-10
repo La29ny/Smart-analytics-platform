@@ -14,6 +14,14 @@ import mailLogo from "./assets/mail.png";
 
 import { saveAs } from "file-saver";
 
+import jsPDF from "jspdf";
+
+import {
+  Bar,
+  Line,
+  Pie,
+  Scatter
+} from "react-chartjs-2";
 
 function Sparkline() {
   const pts = "0,28 8,22 16,26 24,14 32,18 40,10 48,15 56,8 64,12 72,6 80,10";
@@ -59,6 +67,72 @@ function StatCard({ label, value, sub, icon, iconClass }) {
   );
 }
 
+const dashboardChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+
+  plugins: {
+    legend: {
+      labels: {
+        color: "#d1d5db",
+        font: {
+          size: 11,
+          weight: "600"
+        }
+      }
+    }
+  },
+
+  scales: {
+    x: {
+      ticks: {
+        color: "#9ca3af"
+      },
+      grid: {
+        color: "rgba(255,255,255,0.05)"
+      }
+    },
+
+    y: {
+      ticks: {
+        color: "#9ca3af"
+      },
+      grid: {
+        color: "rgba(255,255,255,0.05)"
+      }
+    }
+  }
+};
+
+const buildDashboardChartData = (chart) => ({
+  labels: chart.data.labels?.slice(0, 20),
+
+  datasets: chart.data.datasets.map(ds => ({
+    ...ds,
+
+    data: ds.data?.slice(0, 20),
+
+    backgroundColor:
+      chart.data.chartType === "pie"
+        ? [
+            "#8b5cf6",
+            "#60a5fa",
+            "#34d399",
+            "#f59e0b",
+            "#f87171"
+          ]
+        : "rgba(96,165,250,0.85)",
+
+    borderColor: "#60a5fa",
+
+    borderWidth: 2,
+
+    pointRadius: 3,
+
+    tension: 0.35
+  }))
+});
+
 function Dashboard({
   filename,
   onNavigate,
@@ -77,7 +151,9 @@ function Dashboard({
   setLastResult,
   setPrevResult,
   contextMemory,
-  setContextMemory
+  setContextMemory,
+  dashboardWidgets,
+  setDashboardWidgets
 }) {
   return (
     <>
@@ -186,7 +262,12 @@ function Dashboard({
             <p>First 5 rows of your dataset</p>
           </div>
           {filename ? (
-            <Preview filename={filename} inline />
+            <Preview
+              filename={filename}
+              inline
+              dashboardWidgets={dashboardWidgets}
+              setDashboardWidgets={setDashboardWidgets}
+            />
           ) : (
             <div className="empty-state">
               <span>📋</span>
@@ -219,11 +300,37 @@ function Dashboard({
                   <p className="chart-title">
                     {chart.type?.toUpperCase()} — {chart.x}{chart.y ? ` vs ${chart.y}` : ''}
                   </p>
-                  <img 
-                    src={chart.url} 
-                    alt={chart.type} 
-                    style={{ maxHeight: "180px", width: "100%", objectFit: "contain" }}
-                  />
+                  <div className="dashboard-chart">
+
+                    {chart.data.chartType === "bar" && (
+                      <Bar
+                        options={dashboardChartOptions}
+                        data={buildDashboardChartData(chart)}
+                      />
+                    )}
+
+                    {chart.data.chartType === "line" && (
+                      <Line
+                        options={dashboardChartOptions}
+                        data={buildDashboardChartData(chart)}
+                      />
+                    )}
+
+                    {chart.data.chartType === "pie" && (
+                      <Pie
+                        options={dashboardChartOptions}
+                        data={buildDashboardChartData(chart)}
+                      />
+                    )}
+
+                    {chart.data.chartType === "scatter" && (
+                      <Scatter
+                        options={dashboardChartOptions}
+                        data={buildDashboardChartData(chart)}
+                      />
+                    )}
+
+                  </div>
                 </div>
               ))}
             </div>
@@ -236,17 +343,102 @@ function Dashboard({
         </div>
       </div>
 
-      {/* AI Assistant Bar */}
-      <div className="chat-layout">
-        <ChatPanel chatHistory={chatHistory} />
 
-        <ResultPanel result={activeResult} />
-      </div>
+
+      {dashboardWidgets.length > 0 && (
+
+        <div className="dash-card">
+
+          <div className="card-header-row">
+
+            <div className="card-header">
+              <h3>📌 Custom Dashboard</h3>
+              <p>Your pinned analytics workspace</p>
+            </div>
+
+            <button
+              className="btn-outline"
+              onClick={() => setDashboardWidgets([])}
+            >
+              Clear
+            </button>
+
+          </div>
+
+          <div className="dashboard-builder-grid">
+
+            {dashboardWidgets.map(widget => (
+
+              <div
+                key={widget.id}
+                className="dashboard-widget"
+              >
+
+                {widget.type === "insight" && (
+                  <div className="insight-card insight">
+                    {widget.insight.message}
+                  </div>
+                )}
+
+
+                {widget.type === "kpi" && (
+
+                  <div className="dashboard-kpi">
+
+                    <h2>{widget.value}</h2>
+
+                    <p>{widget.title}</p>
+
+                  </div>
+
+                )}
+
+                {widget.type === "chart" && (
+                  <>
+                    <h4>{widget.title}</h4>
+
+                    <img
+                      src={widget.chart.url}
+                      alt="Pinned chart"
+                      style={{
+                        width: "100%",
+                        borderRadius: 12
+                      }}
+                    />
+                  </>
+                )}
+
+              </div>
+
+            ))}
+
+          </div>
+
+        </div>
+      )}
+
+      {/* AI Assistant Bar */}
+      {(chatHistory.length > 0 || activeResult) && (
+
+        <div className="chat-layout">
+
+          <ChatPanel chatHistory={chatHistory} />
+
+          {activeResult && (
+            <ResultPanel result={activeResult} />
+          )}
+
+        </div>
+
+      )}
 
       <NLPInput
         filename={filename}
         onTrain={handleTrain}
         lastResult={lastResult}
+        dashboardWidgets={dashboardWidgets}
+        setDashboardWidgets={setDashboardWidgets}
+        charts={charts}
         onResponse={(res) => {
 
           // 🔥 HANDLE ACTIONS
@@ -342,6 +534,23 @@ function App() {
     models: false
   });
 
+  const [dashboardWidgets, setDashboardWidgets] = useState([]);
+
+  const [user, setUser] = useState(null);
+
+    const [authMode, setAuthMode] =
+      useState("login");
+
+    const [authForm, setAuthForm] =
+      useState({
+        name: "",
+        email: "",
+        password: "",
+        otp: ""
+      });
+
+
+
   // Load saved charts from localStorage on mount
   useEffect(() => {
     const savedCharts = localStorage.getItem("appCharts");
@@ -408,30 +617,133 @@ function App() {
 
   }, []);
 
-  const saveSession = () => {
+  useEffect(() => {
+
+    const savedUser =
+      localStorage.getItem("smart_user");
+
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+
+  }, []);
+
+  useEffect(() => {
+
+    if (!user?.email) return;
+
+    fetch(
+      `http://127.0.0.1:5000/user-sessions/${user.email}`
+    )
+      .then(res => res.json())
+      .then(data => {
+
+        if (data.length > 0) {
+
+          const latest =
+            data[data.length - 1];
+
+          setCharts(latest.charts || []);
+
+          setDashboardWidgets(
+            latest.dashboardWidgets || []
+          );
+
+          setChatHistory(
+            latest.chatHistory || []
+          );
+
+          setContextMemory(
+            latest.contextMemory || {}
+          );
+
+          setFilename(
+            latest.filename || ""
+          );
+        }
+      });
+
+  }, [user]);
+
+  useEffect(() => {
+
+    localStorage.setItem(
+      "dashboardWidgets",
+      JSON.stringify(dashboardWidgets)
+    );
+
+  }, [dashboardWidgets]);
+
+  useEffect(() => {
+
+    const saved =
+      localStorage.getItem("dashboardWidgets");
+
+    if (saved) {
+      setDashboardWidgets(JSON.parse(saved));
+    }
+
+  }, []);
+
+  const saveSession = async () => {
 
     const session = {
+
       id: Date.now(),
-      timestamp: new Date().toLocaleString(),
+
+      timestamp:
+        new Date().toLocaleString(),
+
+      email: user.email,
 
       filename,
 
       chatHistory,
+
       charts,
+
+      dashboardWidgets,
+
       contextMemory
     };
 
-    const updated = [session, ...savedSessions];
+    try {
 
-    setSavedSessions(updated);
+      await fetch(
+        "http://127.0.0.1:5000/save-session",
+        {
+          method: "POST",
 
-    localStorage.setItem(
-      "savedSessions",
-      JSON.stringify(updated)
-    );
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
 
-    alert("✅ Session saved");
+          body: JSON.stringify(session)
+        }
+      );
+
+      alert(
+        "☁️ Session saved to cloud"
+      );
+
+    } catch {
+
+      alert("Save failed");
+    }
   };
+
+  //   const updated = [session, ...savedSessions];
+
+  //   setSavedSessions(updated);
+
+  //   localStorage.setItem(
+  //     "savedSessions",
+  //     JSON.stringify(updated)
+  //   );
+
+  //   alert("✅ Session saved");
+  // };
 
   const generateShareText = () => {
 
@@ -479,6 +791,204 @@ function App() {
     );
 
     saveAs(blob, "analytics-session.txt");
+  };
+
+  
+
+
+
+
+
+  const generateAIReport = () => {
+
+    const doc = new jsPDF();
+
+    let y = 20;
+
+    // 🔥 TITLE
+    doc.setFontSize(20);
+    doc.text("Smart Analytics AI Report", 20, y);
+
+    y += 14;
+
+    // 🔥 DATASET
+    doc.setFontSize(12);
+
+    doc.text(
+      `Dataset: ${filename || "Unknown Dataset"}`,
+      20,
+      y
+    );
+
+    y += 14;
+
+    // 🔥 EXECUTIVE SUMMARY
+    doc.setFontSize(16);
+    doc.text("Executive Summary", 20, y);
+
+    y += 10;
+
+    doc.setFontSize(11);
+
+    const summary =
+      `This report analyzes ${
+        datasetInfo.rows || 0
+      } rows across ${
+        datasetInfo.columns?.length || 0
+      } features. AI-assisted analytics identified patterns, relationships, and trends from the uploaded dataset.`;
+
+    const summaryLines =
+      doc.splitTextToSize(summary, 170);
+
+    doc.text(summaryLines, 20, y);
+
+    y += summaryLines.length * 7 + 10;
+
+    // 🔥 KEY FINDINGS
+    doc.setFontSize(16);
+    doc.text("Key Findings", 20, y);
+
+    y += 10;
+
+    doc.setFontSize(11);
+
+    const findings = chatHistory
+      .slice(-6)
+      .map(m => `• ${m.text}`);
+
+    findings.forEach(f => {
+      const lines = doc.splitTextToSize(f, 170);
+
+      doc.text(lines, 24, y);
+
+      y += lines.length * 7 + 6;
+    });
+
+    // 🔥 RECOMMENDATIONS
+    y += 8;
+
+    doc.setFontSize(16);
+    doc.text("Recommendations", 20, y);
+
+    y += 10;
+
+    doc.setFontSize(11);
+
+    const recommendations = [
+      "Focus on highly correlated variables for prediction tasks.",
+      "Review columns with detected anomalies or missing values.",
+      "Use generated visualizations to identify business trends.",
+      "Consider training additional ML models for stronger predictions."
+    ];
+
+    recommendations.forEach(r => {
+
+      const lines = doc.splitTextToSize(
+        `• ${r}`,
+        170
+      );
+
+      doc.text(lines, 24, y);
+
+      y += lines.length * 7 + 6;
+    });
+
+    // 🔥 FOOTER
+    y += 10;
+
+    doc.setFontSize(10);
+
+    doc.text(
+      "Generated automatically by Smart Analytics AI",
+      20,
+      y
+    );
+
+    doc.save("AI-Analytics-Report.pdf");
+  };
+
+  const sendOTP = async () => {
+
+    if (!authForm.email) {
+
+      alert("Enter email first");
+
+      return;
+    }
+
+    try {
+
+      const res = await fetch(
+        "http://127.0.0.1:5000/send-otp",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            email: authForm.email
+          })
+        }
+      );
+
+      const data = await res.json();
+
+      alert(data.message);
+
+    } catch {
+
+      alert("Failed to send OTP");
+    }
+  };
+
+
+
+  const handleAuth = async () => {
+
+    try {
+
+      const endpoint =
+        authMode === "login"
+          ? "login"
+          : "signup";
+
+      const res = await fetch(
+        `http://127.0.0.1:5000/${endpoint}`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify(authForm)
+        }
+      );
+
+      const data = await res.json();
+
+      if (data.user) {
+
+        setUser(data.user);
+
+        localStorage.setItem(
+          "smart_user",
+          JSON.stringify(data.user)
+        );
+
+      } else {
+
+        alert(data.error);
+      }
+
+    } catch {
+
+      alert("Authentication failed");
+    }
   };
 
   const handleUploadSuccess = (f) => {
@@ -529,6 +1039,119 @@ function App() {
     { id: "predict", label: "Predictions", icon: "🎯" },
     { id: "nlp", label: "NLP Assistant", icon: "✨" },
   ];
+
+
+  if (!user) {
+
+    return (
+
+      <div className="auth-page">
+
+        <div className="auth-card">
+
+          <h1>🧠 Smart Analytics</h1>
+
+          <p>
+            AI-powered analytics workspace
+          </p>
+
+          {authMode === "signup" && (
+
+            <>
+
+              <input
+                placeholder="Name"
+                value={authForm.name}
+                onChange={(e) =>
+                  setAuthForm({
+                    ...authForm,
+                    name: e.target.value
+                  })
+                }
+              />
+
+              <div className="otp-row">
+
+                <input
+                  placeholder="Enter OTP"
+                  value={authForm.otp}
+                  onChange={(e) =>
+                    setAuthForm({
+                      ...authForm,
+                      otp: e.target.value
+                    })
+                  }
+                />
+
+                <button
+                  type="button"
+                  onClick={sendOTP}
+                >
+                  Send OTP
+                </button>
+
+              </div>
+
+            </>
+
+          )}
+
+          <input
+            placeholder="Email"
+            value={authForm.email}
+            onChange={(e) =>
+              setAuthForm({
+                ...authForm,
+                email: e.target.value
+              })
+            }
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            value={authForm.password}
+            onChange={(e) =>
+              setAuthForm({
+                ...authForm,
+                password: e.target.value
+              })
+            }
+          />
+
+          <button onClick={handleAuth}>
+
+            {authMode === "login"
+              ? "Login"
+              : "Create Account"}
+
+          </button>
+
+          <span
+            onClick={() =>
+              setAuthMode(
+                authMode === "login"
+                  ? "signup"
+                  : "login"
+              )
+            }
+            style={{
+              cursor: "pointer",
+              marginTop: 14
+            }}
+          >
+
+            {authMode === "login"
+              ? "Create account"
+              : "Already have account?"}
+
+          </span>
+
+        </div>
+
+      </div>
+    );
+  }
 
   return (
     <div className="app-shell">
@@ -605,14 +1228,45 @@ function App() {
               ⬇ Export
             </button>
 
+            <button
+              className="btn-outline"
+              onClick={generateAIReport}
+            >
+              🧠 AI Report
+            </button>
 
 
-            <div className="topbar-avatar">N</div>
+            <button
+              className="btn-outline"
+              onClick={() => {
+
+                localStorage.removeItem(
+                  "smart_user"
+                );
+
+                setUser(null);
+              }}
+            >
+              Logout
+            </button>
+
+
+
+            <div className="topbar-avatar">
+              {user?.name?.[0] || "U"}
+            </div>
           </div>
         </header>
 
         <main className="page-content">
-          {activePage === "dashboard" && (
+          <div
+            style={{
+              display:
+                activePage === "dashboard"
+                  ? "block"
+                  : "none"
+            }}
+          >
             <Dashboard
               filename={filename}
               onNavigate={setActivePage}
@@ -632,16 +1286,34 @@ function App() {
               setPrevResult={setPrevResult}  
               contextMemory={contextMemory}
               setContextMemory={setContextMemory}
+              dashboardWidgets={dashboardWidgets}
+              setDashboardWidgets={setDashboardWidgets}
             />
-          )}
+          </div>
+          
 
-          {activePage === "upload" && (
+          <div
+            style={{
+              display:
+                activePage === "upload"
+                  ? "block"
+                  : "none"
+            }}
+          >
             <div className="upload-page">
               <Upload setFilename={handleUploadSuccess} />
             </div>
-          )}
+          </div>
+          
 
-          {activePage === "preview" && (
+          <div
+            style={{
+              display:
+                activePage === "preview"
+                  ? "block"
+                  : "none"
+            }}
+          >
             <div className="dash-card">
               <div className="card-header">
                 <h3>Full Dataset Preview</h3>
@@ -649,9 +1321,16 @@ function App() {
               </div>
               {filename ? <Preview filename={filename} /> : <div className="empty-state"><span>📋</span><p>Upload a dataset first</p></div>}
             </div>
-          )}
+          </div>
 
-          {activePage === "charts" && (
+          <div
+            style={{
+              display:
+                activePage === "charts"
+                  ? "block"
+                  : "none"
+            }}
+          >
             <div className="dash-card charts-page">
               <div className="card-header">
                 <h3>Data Visualizations</h3>
@@ -663,6 +1342,8 @@ function App() {
                   datasetInfo={datasetInfo}
                   charts={charts}
                   setCharts={setCharts}
+                  dashboardWidgets={dashboardWidgets}
+                  setDashboardWidgets={setDashboardWidgets}
                 />
               ) : (
                 <div className="empty-state">
@@ -671,16 +1352,29 @@ function App() {
                 </div>
               )}
             </div>
-          )}
+          </div>
 
-          {activePage === "nlp" && (
+          <div
+            style={{
+              display:
+                activePage === "nlp"
+                  ? "block"
+                  : "none"
+            }}
+          >
             <div className="form-page">
               <div className="dash-card">
                 <div className="card-header">
                   <h3>✨ NLP Assistant & Model Training</h3>
                   <p>Use natural language to train models on your data</p>
                 </div>
-                <NLPInput filename={filename} onTrain={handleTrain} />
+                <NLPInput
+                  filename={filename}
+                  onTrain={handleTrain}
+                  dashboardWidgets={dashboardWidgets}
+                  setDashboardWidgets={setDashboardWidgets}
+                  charts={charts}
+                />
                 {trainResult && (
                   <div className="train-result-box">
                     <h4>📊 Training Results</h4>
@@ -698,9 +1392,16 @@ function App() {
                 )}
               </div>
             </div>
-          )}
+          </div>
 
-          {activePage === "predict" && (
+          <div
+            style={{
+              display:
+                activePage === "predict"
+                  ? "block"
+                  : "none"
+            }}
+          >
             <div className="form-page">
               <div className="dash-card">
                 <div className="card-header">
@@ -710,7 +1411,9 @@ function App() {
                 <Predict filename={filename} datasetInfo={datasetInfo} />
               </div>
             </div>
-          )}
+          </div>
+
+
         </main>
       </div>
 

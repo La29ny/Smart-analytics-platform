@@ -30,12 +30,107 @@ ChartJS.register(
   Legend
 );
 
-function Charts({ 
-  filename, 
-  inline, 
-  datasetInfo = {}, 
-  charts = [], 
-  setCharts 
+ChartJS.defaults.color = "#162538";
+ChartJS.defaults.borderColor = "rgba(255,255,255,0.08)";
+
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  animation: false,
+
+  plugins: {
+    legend: {
+      position: "top",
+
+      labels: {
+        color: "#d1d5db",
+        usePointStyle: true,
+        pointStyle: "rectRounded",
+
+        font: {
+          size: 12,
+          weight: "600"
+        },
+
+        padding: 18
+      }
+    },
+
+    tooltip: {
+      backgroundColor: "#111827",
+      titleColor: "#fff",
+      bodyColor: "#e5e7eb",
+      borderColor: "#374151",
+      borderWidth: 1
+    }
+  },
+
+  scales: {
+    x: {
+      ticks: {
+        color: "#9ca3af",
+        maxTicksLimit: 6,
+        font: {
+          size: 11
+        }
+      },
+
+      grid: {
+        display: false
+      },
+
+      border: {
+        display: false
+      }
+    },
+
+    y: {
+      ticks: {
+        color: "#9ca3af",
+        font: {
+          size: 11
+        }
+      },
+
+      grid: {
+        color: "rgba(255,255,255,0.04)"
+      },
+
+      border: {
+        display: false
+      }
+    }
+  },
+
+  elements: {
+    bar: {
+      borderRadius: 6,
+      backgroundColor: "#60a5fa",
+      borderSkipped: false
+    },
+
+    line: {
+      tension: 0.35,
+      borderWidth: 3
+    },
+
+    point: {
+      radius: 2,
+      hoverRadius: 5
+    }
+  }
+};
+
+
+function Charts({
+  filename,
+  inline,
+  datasetInfo = {},
+  charts = [],
+  setCharts,
+  dashboardWidgets = [],
+  setDashboardWidgets
 }) {
   const [loading, setLoading] = useState(false);
   const [chartType, setChartType] = useState("histogram");
@@ -224,6 +319,27 @@ function Charts({
           <div className="chart-history">
             {charts.map((chart) => (
               <div key={chart.id} className="chart-card">
+
+                <button
+                  className="pin-btn"
+                  onClick={() => {
+
+                    const widget = {
+                      id: Date.now(),
+                      type: "chart",
+                      title: `${chart.type} chart`,
+                      chart
+                    };
+
+                    setDashboardWidgets(prev => [
+                      widget,
+                      ...prev
+                    ]);
+                  }}
+                >
+                  📌 Pin
+                </button>
+
                 <h4>
                   {chart.type.toUpperCase()} — {chart.x}
                   {chart.y && ` vs ${chart.y}`}
@@ -231,35 +347,143 @@ function Charts({
                 <div className="chart-render">
                   {chart.data.chartType === "bar" && (
                     <Bar
+                      options={chartOptions}
                       data={{
-                        labels: chart.data.labels,
-                        datasets: chart.data.datasets
+                        labels: chart.data.labels.slice(0, 40),
+                        datasets: chart.data.datasets.map(ds => ({
+                          ...ds,
+
+                          data: ds.data.slice(0, 20),
+
+                          backgroundColor:
+                            chart.data.chartType === "bar"
+                              ? "#60a5fa"
+                              : chart.data.chartType === "pie"
+                              ? [
+                                  "#8b5cf6",
+                                  "#60a5fa",
+                                  "#34d399",
+                                  "#f59e0b",
+                                  "#f87171"
+                                ]
+                              : "rgba(96,165,250,0.15)",
+
+                          borderColor:
+                            chart.data.chartType === "line"
+                              ? "#60a5fa"
+                              : "#60a5fa",
+
+                          borderWidth: 2,
+
+                          fill: chart.data.chartType === "line"
+                        }))
                       }}
                     />
                   )}
 
                   {chart.data.chartType === "line" && (
                     <Line
+                    options={chartOptions}
                       data={{
-                        labels: chart.data.labels,
-                        datasets: chart.data.datasets
+                        labels: chart.data.labels.slice(0, 40),
+                        datasets: chart.data.datasets.map(ds => ({
+                          ...ds,
+
+                          data: ds.data.slice(0, 20),
+
+                          backgroundColor:
+                            chart.data.chartType === "bar"
+                              ? "#60a5fa"
+                              : chart.data.chartType === "pie"
+                              ? [
+                                  "#8b5cf6",
+                                  "#60a5fa",
+                                  "#34d399",
+                                  "#f59e0b",
+                                  "#f87171"
+                                ]
+                              : "rgba(96,165,250,0.15)",
+
+                          borderColor:
+                            chart.data.chartType === "line"
+                              ? "#60a5fa"
+                              : "#60a5fa",
+
+                          borderWidth: 2,
+
+                          fill: chart.data.chartType === "line"
+                        }))
                       }}
                     />
                   )}
 
                   {chart.data.chartType === "pie" && (
                     <Pie
+                    options={chartOptions}
                       data={{
-                        labels: chart.data.labels,
-                        datasets: chart.data.datasets
+                        labels: chart.data.labels.slice(0, 40),
+                        datasets: chart.data.datasets.map(ds => ({
+                          ...ds,
+
+                          data: ds.data.slice(0, 20),
+
+                          backgroundColor:
+                            chart.data.chartType === "bar"
+                              ? "#60a5fa"
+                              : chart.data.chartType === "pie"
+                              ? [
+                                  "#8b5cf6",
+                                  "#60a5fa",
+                                  "#34d399",
+                                  "#f59e0b",
+                                  "#f87171"
+                                ]
+                              : "rgba(96,165,250,0.15)",
+
+                          borderColor:
+                            chart.data.chartType === "line"
+                              ? "#60a5fa"
+                              : "#60a5fa",
+
+                          borderWidth: 2,
+
+                          fill: chart.data.chartType === "line"
+                        }))
                       }}
                     />
                   )}
 
                   {chart.data.chartType === "scatter" && (
                     <Scatter
+                    options={chartOptions}
                       data={{
-                        datasets: chart.data.datasets
+                        datasets: chart.data.datasets.map(ds => ({
+                          ...ds,
+
+                          data: ds.data.slice(0, 20),
+
+                          backgroundColor:
+                            chart.data.chartType === "bar"
+                              ? "#60a5fa"
+                              : chart.data.chartType === "pie"
+                              ? [
+                                  "#8b5cf6",
+                                  "#60a5fa",
+                                  "#34d399",
+                                  "#f59e0b",
+                                  "#f87171"
+                                ]
+                              : "rgba(96,165,250,0.15)",
+
+                          borderColor:
+                            chart.data.chartType === "line"
+                              ? "#60a5fa"
+                              : "#60a5fa",
+
+                          borderWidth: 2,
+
+                          fill: chart.data.chartType === "line"
+                        }))
                       }}
                     />
                   )}
