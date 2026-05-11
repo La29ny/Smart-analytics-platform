@@ -691,7 +691,7 @@ function NLPInput({
             </div>
 
             {/* {result && <div className="nlp-result">{result}</div>} */}
-   {/* {        tableJSX} */}
+   {        tableJSX}
           </div>
         </div>
       </div>

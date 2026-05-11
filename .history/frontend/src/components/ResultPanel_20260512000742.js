@@ -94,21 +94,7 @@ function ResultPanel({ result }) {
                     <thead>
                     <tr>
                         {Object.keys(result.data[0]).map(col => (
-                        <th
-                            key={col}
-                            style={{
-                                background:
-                                col === result.highlightColumn
-                                    ? "rgba(139,92,246,0.35)"
-                                    : "",
-                                color:
-                                col === result.highlightColumn
-                                    ? "#c084fc"
-                                    : ""
-                            }}
-                            >
-                            {col}
-                            </th>
+                        <th key={col}>{col}</th>
                         ))}
                     </tr>
                     </thead>
@@ -116,21 +102,7 @@ function ResultPanel({ result }) {
                     {result.data.map((row, i) => (
                         <tr key={i}>
                         {Object.values(row).map((val, j) => (
-                            <td
-                                key={j}
-                                style={{
-                                    background:
-                                    Object.keys(row)[j] === result.highlightColumn
-                                        ? "rgba(139,92,246,0.18)"
-                                        : "",
-                                    color:
-                                    Object.keys(row)[j] === result.highlightColumn
-                                        ? "#e9d5ff"
-                                        : ""
-                                }}
-                                >
-                                {val}
-                                </td>
+                            <td key={j}>{val}</td>
                         ))}
                         </tr>
                     ))}

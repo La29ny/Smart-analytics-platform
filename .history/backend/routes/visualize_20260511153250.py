@@ -140,13 +140,6 @@ def visualize():
 
     elif chart_type == "bar":
 
-        if x_col not in df.columns or y_col not in df.columns:
-
-            return jsonify({
-                "error":
-                    f"Columns '{x_col}' or '{y_col}' not found in dataset"
-            }), 400
-
         x_vals = pd.to_numeric(
             df[x_col],
             errors="coerce"
@@ -161,13 +154,6 @@ def visualize():
             x_col: x_vals,
             y_col: y_vals
         }).dropna()
-
-        if clean_df.empty:
-
-            return jsonify({
-                "error":
-                    f"No valid numeric data found for {x_col} vs {y_col}"
-            }), 400
 
         return jsonify({
             "chartType": "bar",

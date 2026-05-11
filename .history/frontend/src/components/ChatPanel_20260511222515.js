@@ -30,11 +30,11 @@ function ChatPanel({ chatHistory }) {
           <div className="chat-bubble">
             <div>{msg.text}</div>
 
-              {/* {msg.type && msg.type !== "text" && (
+              {msg.type && msg.type !== "text" && (
                 <div style={{ marginTop: 12 }}>
                   <ResultPanel result={msg} />
                 </div>
-              )} */}
+              )}
             
             {msg.context?.lastColumns?.length > 0 && (
               <small style={{ opacity: 0.6 }}>

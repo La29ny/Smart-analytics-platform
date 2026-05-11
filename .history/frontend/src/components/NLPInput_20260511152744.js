@@ -78,6 +78,9 @@ function NLPInput({
 
     try {
       setLoading(true);
+      await new Promise(resolve =>
+        setTimeout(resolve, 500)
+      );
       
       const lower = text.toLowerCase().trim();
 
@@ -246,8 +249,7 @@ function NLPInput({
                 filename,
                 chart_type: chartType,
                 x,
-                y,
-                filter
+                y
               })
             }
           );
@@ -317,22 +319,11 @@ function NLPInput({
 
         setHighlightCol(data.target);
 
-        const highlightedColumn =
-          data.conditions?.[0]?.[0];
-
         const response = {
-
           role: "system",
-
           type: "table",
-
-          text:
-            `🔎 Filtered results for ${highlightedColumn}`,
-
+          text: `🔎 ${data.target}`,
           data: data.rows || [],
-
-          highlightColumn:
-            highlightedColumn,
 
           context: {
             lastQuery: text,
@@ -341,12 +332,7 @@ function NLPInput({
           }
         };
 
-        setTableData(data.rows || []);
-        setHighlightCol(highlightedColumn);
-
         onResponse?.(response);
-
-       
 
         
       }
@@ -373,23 +359,12 @@ function NLPInput({
       }
 
       else if (data.intent === "filter") {
-        setHighlightCol(data.column);
-
-        const response = {
+        
+        onResponse?.({
           role: "system",
-          type: "table",
-          text: `🔎 Showing results for: ${data.column} ${data.operator} ${data.value}`,
-          data: data.rows || [],
-          highlightColumn: data.column,
-          context: {
-            lastQuery: text,
-            lastFilters: [{ col: data.column, op: data.operator, val: data.value }],
-            lastColumns: [data.column]
-          }
-        };
-
-        setTableData(data.rows || []);
-        onResponse?.(response);
+          type: "text",
+          text: `🔎 Showing results for: ${data.column} ${data.operator} ${data.value}`
+        });
       }
 
       else {
@@ -691,7 +666,7 @@ function NLPInput({
             </div>
 
             {/* {result && <div className="nlp-result">{result}</div>} */}
-   {/* {        tableJSX} */}
+            {/* {tableJSX} */}
           </div>
         </div>
       </div>
@@ -702,7 +677,24 @@ function NLPInput({
   return (
     <div>
 
-      
+      {loading && (
+        <div className="training-overlay">
+
+          <div className="training-modal">
+
+            <div className="training-spinner"></div>
+
+            <h2>Training AI Models...</h2>
+
+            <p>
+              Analyzing dataset patterns and
+              optimizing machine learning models
+            </p>
+
+          </div>
+
+        </div>
+      )}
       {toast && (
         <div className="toast">
           {toast}

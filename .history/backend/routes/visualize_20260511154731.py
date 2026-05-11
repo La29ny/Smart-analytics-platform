@@ -144,7 +144,7 @@ def visualize():
 
             return jsonify({
                 "error":
-                    f"Columns '{x_col}' or '{y_col}' not found in dataset"
+                    f"Columns '{x_col}' or '{y_col}' not found"
             }), 400
 
         x_vals = pd.to_numeric(

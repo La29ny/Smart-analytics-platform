@@ -138,53 +138,53 @@ def visualize():
             ]
         })
 
-    elif chart_type == "bar":
+        elif chart_type == "bar":
 
-        if x_col not in df.columns or y_col not in df.columns:
+            if x_col not in df.columns or y_col not in df.columns:
+
+                return jsonify({
+                    "error":
+                        f"Columns '{x_col}' or '{y_col}' not found"
+                }), 400
+
+            x_vals = pd.to_numeric(
+                df[x_col],
+                errors="coerce"
+            )
+
+            y_vals = pd.to_numeric(
+                df[y_col],
+                errors="coerce"
+            )
+
+            clean_df = pd.DataFrame({
+                x_col: x_vals,
+                y_col: y_vals
+            }).dropna()
+
+            if clean_df.empty:
+
+                return jsonify({
+                    "error":
+                        f"No valid numeric data found for {x_col} vs {y_col}"
+                }), 400
 
             return jsonify({
-                "error":
-                    f"Columns '{x_col}' or '{y_col}' not found in dataset"
-            }), 400
+                "chartType": "bar",
+                "labels":
+                    clean_df[x_col]
+                    .astype(str)
+                    .tolist(),
 
-        x_vals = pd.to_numeric(
-            df[x_col],
-            errors="coerce"
-        )
-
-        y_vals = pd.to_numeric(
-            df[y_col],
-            errors="coerce"
-        )
-
-        clean_df = pd.DataFrame({
-            x_col: x_vals,
-            y_col: y_vals
-        }).dropna()
-
-        if clean_df.empty:
-
-            return jsonify({
-                "error":
-                    f"No valid numeric data found for {x_col} vs {y_col}"
-            }), 400
-
-        return jsonify({
-            "chartType": "bar",
-            "labels":
-                clean_df[x_col]
-                .astype(str)
-                .tolist(),
-
-            "datasets": [
-                {
-                    "label": y_col,
-                    "data":
-                        clean_df[y_col]
-                        .tolist()
-                }
-            ]
-        })
+                "datasets": [
+                    {
+                        "label": y_col,
+                        "data":
+                            clean_df[y_col]
+                            .tolist()
+                    }
+                ]
+            })
 
     elif chart_type == "pie":
         counts = df[x_col].value_counts()

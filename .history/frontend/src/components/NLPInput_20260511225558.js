@@ -557,73 +557,73 @@ function NLPInput({
 
   // ====================== JSX ======================
 
-  // const tableJSX = tableData.length > 0 && (
-  //   <div className="resizable-wrapper" style={{ marginTop: 16 }}>
-  //     <div
-  //       className="resize-handle-top"
-  //       onMouseDown={startResize}
-  //     />
-  //     <div
-  //       className="nlp-table resizable-box"
-  //       style={{ height }}
-  //     >
-  //       <div style={{ marginBottom: 10 }}>
-  //         <button onClick={addRow}>➕ Add Row</button>
+  const tableJSX = tableData.length > 0 && (
+    <div className="resizable-wrapper" style={{ marginTop: 16 }}>
+      <div
+        className="resize-handle-top"
+        onMouseDown={startResize}
+      />
+      <div
+        className="nlp-table resizable-box"
+        style={{ height }}
+      >
+        <div style={{ marginBottom: 10 }}>
+          <button onClick={addRow}>➕ Add Row</button>
 
-  //         <button onClick={saveData} style={{ marginLeft: 10 }}>
-  //           💾 Save
-  //         </button>
-  //       </div>
-  //     <table className="preview-table">
-  //       <thead>
-  //         <tr>
-  //           {Object.keys(tableData[0]).map((col) => (
-  //             <th
-  //               key={col}
-  //               className={`sortable-header ${(col || "").toLowerCase() === (highlightCol || "") ? "highlight-header" : ""}`}
+          <button onClick={saveData} style={{ marginLeft: 10 }}>
+            💾 Save
+          </button>
+        </div>
+      <table className="preview-table">
+        <thead>
+          <tr>
+            {Object.keys(tableData[0]).map((col) => (
+              <th
+                key={col}
+                className={`sortable-header ${(col || "").toLowerCase() === (highlightCol || "") ? "highlight-header" : ""}`}
 
-  //               onClick={() => handleSortMenu(col)}
+                onClick={() => handleSortMenu(col)}
 
-  //               onContextMenu={(e) => {
-  //                 e.preventDefault();
-  //                 openColumnMenu(col);
-  //               }}
-  //             >
-  //               {col} {sortConfig.column === col
-  //                 ? (sortConfig.direction === "asc" ? "▲" : "▼")
-  //                 : "⬍"}
-  //             </th>
-  //           ))}
-  //         </tr>
-  //       </thead>
-  //       <tbody>
-  //         {tableData.map((row, i) => (
-  //           <tr key={i}>
-  //             {Object.keys(row).map((col) => (
-  //               <td
-  //                 key={col}
-  //                 className={(col || "").toLowerCase() === (highlightCol || "") ? "highlight-cell" : ""}
-  //               >
-  //                 <input
-  //                   value={row[col] || ""}
-  //                   onChange={(e) => handleCellChange(i, col, e.target.value)}
-  //                   style={{
-  //                     width: "100%",
-  //                     background: "transparent",
-  //                     border: "none",
-  //                     color: "white",
-  //                     outline: "none"
-  //                   }}
-  //                 />
-  //               </td>
-  //             ))}
-  //           </tr>
-  //         ))}
-  //       </tbody>
-  //     </table>
-  //   </div>
-  //   </div>    
-  // );
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  openColumnMenu(col);
+                }}
+              >
+                {col} {sortConfig.column === col
+                  ? (sortConfig.direction === "asc" ? "▲" : "▼")
+                  : "⬍"}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {tableData.map((row, i) => (
+            <tr key={i}>
+              {Object.keys(row).map((col) => (
+                <td
+                  key={col}
+                  className={(col || "").toLowerCase() === (highlightCol || "") ? "highlight-cell" : ""}
+                >
+                  <input
+                    value={row[col] || ""}
+                    onChange={(e) => handleCellChange(i, col, e.target.value)}
+                    style={{
+                      width: "100%",
+                      background: "transparent",
+                      border: "none",
+                      color: "white",
+                      outline: "none"
+                    }}
+                  />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    </div>    
+  );
 
   // 🔥 DASHBOARD VERSION
   if (dashboardMode) {
@@ -691,7 +691,7 @@ function NLPInput({
             </div>
 
             {/* {result && <div className="nlp-result">{result}</div>} */}
-   {/* {        tableJSX} */}
+   {        tableJSX}
           </div>
         </div>
       </div>
@@ -772,7 +772,7 @@ function NLPInput({
         </div>
       )}
 
-      {/* {tableJSX} */}
+      {tableJSX}
     </div>
   );
 }

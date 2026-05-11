@@ -116,21 +116,7 @@ function ResultPanel({ result }) {
                     {result.data.map((row, i) => (
                         <tr key={i}>
                         {Object.values(row).map((val, j) => (
-                            <td
-                                key={j}
-                                style={{
-                                    background:
-                                    Object.keys(row)[j] === result.highlightColumn
-                                        ? "rgba(139,92,246,0.18)"
-                                        : "",
-                                    color:
-                                    Object.keys(row)[j] === result.highlightColumn
-                                        ? "#e9d5ff"
-                                        : ""
-                                }}
-                                >
-                                {val}
-                                </td>
+                            <td key={j}>{val}</td>
                         ))}
                         </tr>
                     ))}

@@ -75,30 +75,6 @@ def visualize():
                 elif operator == "==":
                     df = df[series == value]    
 
-
-    # 🔥 apply frontend filter
-    if filter_data:
-
-        column = filter_data.get("column")
-        operator = filter_data.get("operator")
-        value = filter_data.get("value")
-
-        if column in df.columns:
-
-            series = pd.to_numeric(
-                df[column],
-                errors="coerce"
-            )
-
-            if operator == ">":
-                df = df[series > value]
-
-            elif operator == "<":
-                df = df[series < value]
-
-            elif operator == "=":
-                df = df[series == value]
-
     # 🔥 PREPARE DATA FOR FRONTEND CHART
 
 
@@ -139,49 +115,15 @@ def visualize():
         })
 
     elif chart_type == "bar":
-
-        if x_col not in df.columns or y_col not in df.columns:
-
-            return jsonify({
-                "error":
-                    f"Columns '{x_col}' or '{y_col}' not found in dataset"
-            }), 400
-
-        x_vals = pd.to_numeric(
-            df[x_col],
-            errors="coerce"
-        )
-
-        y_vals = pd.to_numeric(
-            df[y_col],
-            errors="coerce"
-        )
-
-        clean_df = pd.DataFrame({
-            x_col: x_vals,
-            y_col: y_vals
-        }).dropna()
-
-        if clean_df.empty:
-
-            return jsonify({
-                "error":
-                    f"No valid numeric data found for {x_col} vs {y_col}"
-            }), 400
+        grouped = df.groupby(x_col)[y_col].mean().reset_index()
 
         return jsonify({
             "chartType": "bar",
-            "labels":
-                clean_df[x_col]
-                .astype(str)
-                .tolist(),
-
+            "labels": grouped[x_col].astype(str).tolist(),
             "datasets": [
                 {
                     "label": y_col,
-                    "data":
-                        clean_df[y_col]
-                        .tolist()
+                    "data": grouped[y_col].tolist()
                 }
             ]
         })

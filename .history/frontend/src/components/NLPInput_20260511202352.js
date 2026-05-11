@@ -373,23 +373,12 @@ function NLPInput({
       }
 
       else if (data.intent === "filter") {
-        setHighlightCol(data.column);
-
-        const response = {
+        
+        onResponse?.({
           role: "system",
-          type: "table",
-          text: `🔎 Showing results for: ${data.column} ${data.operator} ${data.value}`,
-          data: data.rows || [],
-          highlightColumn: data.column,
-          context: {
-            lastQuery: text,
-            lastFilters: [{ col: data.column, op: data.operator, val: data.value }],
-            lastColumns: [data.column]
-          }
-        };
-
-        setTableData(data.rows || []);
-        onResponse?.(response);
+          type: "text",
+          text: `🔎 Showing results for: ${data.column} ${data.operator} ${data.value}`
+        });
       }
 
       else {
@@ -691,7 +680,7 @@ function NLPInput({
             </div>
 
             {/* {result && <div className="nlp-result">{result}</div>} */}
-   {/* {        tableJSX} */}
+   {        tableJSX}
           </div>
         </div>
       </div>
