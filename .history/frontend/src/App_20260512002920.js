@@ -226,9 +226,7 @@ function Dashboard({
                 <div className="model-metric-block">
                   <label>Neural Network</label>
                   <h4>MSE Loss</h4>
-                  <div className="metric-score">
-                    {parseFloat(trainResult?.nn_loss || 0).toFixed(5)}
-                  </div>
+                  <div className="metric-score">{parseFloat(trainResult?.nn_loss || 0).toFixed(2)}</div>
                   <div className="metric-bar">
                     <div className="metric-bar-fill fill-amber" style={{ width: "60%" }} />
                   </div>
@@ -567,29 +565,7 @@ function App() {
 
   // Save charts to localStorage whenever they change
   useEffect(() => {
-
-    try {
-
-      const lightweightCharts = charts.map(c => ({
-        id: c.id,
-        type: c.type,
-        x: c.x,
-        y: c.y,
-        text: c.text
-      }));
-
-      localStorage.setItem(
-        "appCharts",
-        JSON.stringify(lightweightCharts)
-      );
-
-    } catch (err) {
-
-      console.error(
-        "Chart storage quota exceeded"
-      );
-    }
-
+    localStorage.setItem("appCharts", JSON.stringify(charts));
   }, [charts]);
 
   // Detect dataset type based on column names
@@ -1865,9 +1841,7 @@ function App() {
                       </div>
                       <div className="result-item">
                         <label>Neural Network (Loss)</label>
-                        <div className="result-value">
-                          {parseFloat(trainResult?.nn_loss || 0).toFixed(5)}
-                        </div>
+                        <div className="result-value">{parseFloat(trainResult?.nn_loss || 0).toFixed(2)}</div>
                       </div>
                     </div>
                   </div>

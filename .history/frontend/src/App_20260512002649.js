@@ -226,9 +226,7 @@ function Dashboard({
                 <div className="model-metric-block">
                   <label>Neural Network</label>
                   <h4>MSE Loss</h4>
-                  <div className="metric-score">
-                    {parseFloat(trainResult?.nn_loss || 0).toFixed(5)}
-                  </div>
+                  <div className="metric-score">{parseFloat(trainResult?.nn_loss || 0).toFixed(2)}</div>
                   <div className="metric-bar">
                     <div className="metric-bar-fill fill-amber" style={{ width: "60%" }} />
                   </div>
@@ -567,29 +565,7 @@ function App() {
 
   // Save charts to localStorage whenever they change
   useEffect(() => {
-
-    try {
-
-      const lightweightCharts = charts.map(c => ({
-        id: c.id,
-        type: c.type,
-        x: c.x,
-        y: c.y,
-        text: c.text
-      }));
-
-      localStorage.setItem(
-        "appCharts",
-        JSON.stringify(lightweightCharts)
-      );
-
-    } catch (err) {
-
-      console.error(
-        "Chart storage quota exceeded"
-      );
-    }
-
+    localStorage.setItem("appCharts", JSON.stringify(charts));
   }, [charts]);
 
   // Detect dataset type based on column names
@@ -1030,19 +1006,19 @@ function App() {
 
     const findings = [
 
-      `The dataset contains ${datasetInfo.rows || 0} records with ${
-        datasetInfo.columns?.length || 0
-      } analytical features for evaluation.`,
+  `The dataset contains ${datasetInfo.rows || 0} records with ${
+    datasetInfo.columns?.length || 0
+  } analytical features for evaluation.`,
 
-      `Visual analysis identified measurable variation and distribution patterns across multiple variables.`,
+  `Visual analysis identified measurable variation and distribution patterns across multiple variables.`,
 
-      `AI-generated filtering operations detected high-value records and feature-specific thresholds within the dataset.`,
+  `AI-generated filtering operations detected high-value records and feature-specific thresholds within the dataset.`,
 
-      `Comparative chart visualizations highlighted relationships between numerical variables and category distributions.`,
+  `Comparative chart visualizations highlighted relationships between numerical variables and category distributions.`,
 
-      `The analytics engine successfully processed NLP-driven queries and generated dynamic visual outputs.`
+  `The analytics engine successfully processed NLP-driven queries and generated dynamic visual outputs.`
 
-    ];
+];
 
     findings.forEach(f => {
 
@@ -1205,8 +1181,8 @@ function App() {
 
         y += 8;
 
-        const chartWidth = 170;
-        const chartHeight = 95;
+        const chartWidth = 155;
+        const chartHeight = 60;
 
         doc.setFillColor(248,250,252);
 
@@ -1231,7 +1207,7 @@ function App() {
           "FAST"
         );
 
-        y += 110;
+        y += 78;
       }
     }
 
@@ -1865,9 +1841,7 @@ function App() {
                       </div>
                       <div className="result-item">
                         <label>Neural Network (Loss)</label>
-                        <div className="result-value">
-                          {parseFloat(trainResult?.nn_loss || 0).toFixed(5)}
-                        </div>
+                        <div className="result-value">{parseFloat(trainResult?.nn_loss || 0).toFixed(2)}</div>
                       </div>
                     </div>
                   </div>

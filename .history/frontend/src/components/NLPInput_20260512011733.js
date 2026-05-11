@@ -129,14 +129,7 @@ function NLPInput({
             chartType = "histogram";
           }
 
-          else if (
-            fuzzyIncludes(lower, [
-              "bar",
-              "baar",
-              "br",
-              "barchart"
-            ])
-          ) {
+          else if (lower.includes("bar")) {
             chartType = "bar";
           }
 
@@ -181,38 +174,38 @@ function NLPInput({
 
 
           let x = null;
-          let y = null;
+let y = null;
 
-          const separators = [
-            "vs",
-            "and",
-            "against",
-            "by",
-            "versus"
-          ];
+const separators = [
+  "vs",
+  "and",
+  "against",
+  "by",
+  "versus"
+];
 
-          let separatorIndex = -1;
+let separatorIndex = -1;
 
-          for (const sep of separators) {
+for (const sep of separators) {
 
-            const idx = words.indexOf(sep);
+  const idx = words.indexOf(sep);
 
-            if (idx !== -1) {
-              separatorIndex = idx;
-              break;
-            }
-          }
+  if (idx !== -1) {
+    separatorIndex = idx;
+    break;
+  }
+}
 
-          if (separatorIndex !== -1) {
+if (separatorIndex !== -1) {
 
-            x = normalizeColumn(
-              words[separatorIndex - 1]
-            );
+  x = normalizeColumn(
+    words[separatorIndex - 1]
+  );
 
-            y = normalizeColumn(
-              words[separatorIndex + 1]
-            );
-          }
+  y = normalizeColumn(
+    words[separatorIndex + 1]
+  );
+}
 
           else {
 
@@ -437,13 +430,6 @@ function NLPInput({
     const updated = [...tableData];
     updated[rowIndex][col] = value;
     setTableData(updated);
-  };
-
-  const fuzzyIncludes = (text, options) => {
-
-    return options.some(opt =>
-      text.includes(opt)
-    );
   };
 
   const handleKey = (e) => {

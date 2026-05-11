@@ -129,14 +129,7 @@ function NLPInput({
             chartType = "histogram";
           }
 
-          else if (
-            fuzzyIncludes(lower, [
-              "bar",
-              "baar",
-              "br",
-              "barchart"
-            ])
-          ) {
+          else if (lower.includes("bar")) {
             chartType = "bar";
           }
 
@@ -437,13 +430,6 @@ function NLPInput({
     const updated = [...tableData];
     updated[rowIndex][col] = value;
     setTableData(updated);
-  };
-
-  const fuzzyIncludes = (text, options) => {
-
-    return options.some(opt =>
-      text.includes(opt)
-    );
   };
 
   const handleKey = (e) => {

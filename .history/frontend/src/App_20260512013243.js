@@ -1865,9 +1865,7 @@ function App() {
                       </div>
                       <div className="result-item">
                         <label>Neural Network (Loss)</label>
-                        <div className="result-value">
-                          {parseFloat(trainResult?.nn_loss || 0).toFixed(5)}
-                        </div>
+                        <div className="result-value">{parseFloat(trainResult?.nn_loss || 0).toFixed(2)}</div>
                       </div>
                     </div>
                   </div>

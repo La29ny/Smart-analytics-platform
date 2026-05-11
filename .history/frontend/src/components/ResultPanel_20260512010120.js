@@ -311,8 +311,6 @@ function ResultPanel({ result }) {
 
                         {chartType === "bar" && (
                             <Bar
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,
@@ -324,8 +322,6 @@ function ResultPanel({ result }) {
 
                     {chartType === "line" && (
                         <Line
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,
@@ -337,8 +333,6 @@ function ResultPanel({ result }) {
 
                     {chartType === "pie" && (
                         <Pie
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,
@@ -350,8 +344,6 @@ function ResultPanel({ result }) {
 
                     {chartType === "scatter" && (
                         <Scatter
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,

@@ -126,8 +126,9 @@ def train_model():
 
         # Scaling
         scaler = StandardScaler()
-        X_train = scaler.fit_transform(X_train.values)
-        X_test = scaler.transform(X_test.values)
+        X_train = scaler.fit_transform(X_train)
+        X_test = scaler.transform(X_test)
+
         # Save scaler
         scaler_path = os.path.join(MODEL_FOLDER, "scaler.pkl")
 
@@ -270,9 +271,7 @@ def predict():
         df = pd.DataFrame([ordered_input])
 
         # Scale input
-        df = df[expected_features]
-
-        df_scaled = scaler.transform(df.values)
+        df_scaled = scaler.transform(df)
 
         # Predict normalized value
         prediction = model.predict(df_scaled)

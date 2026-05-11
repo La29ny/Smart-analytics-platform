@@ -226,9 +226,7 @@ function Dashboard({
                 <div className="model-metric-block">
                   <label>Neural Network</label>
                   <h4>MSE Loss</h4>
-                  <div className="metric-score">
-                    {parseFloat(trainResult?.nn_loss || 0).toFixed(5)}
-                  </div>
+                  <div className="metric-score">{parseFloat(trainResult?.nn_loss || 0).toFixed(2)}</div>
                   <div className="metric-bar">
                     <div className="metric-bar-fill fill-amber" style={{ width: "60%" }} />
                   </div>
@@ -567,29 +565,7 @@ function App() {
 
   // Save charts to localStorage whenever they change
   useEffect(() => {
-
-    try {
-
-      const lightweightCharts = charts.map(c => ({
-        id: c.id,
-        type: c.type,
-        x: c.x,
-        y: c.y,
-        text: c.text
-      }));
-
-      localStorage.setItem(
-        "appCharts",
-        JSON.stringify(lightweightCharts)
-      );
-
-    } catch (err) {
-
-      console.error(
-        "Chart storage quota exceeded"
-      );
-    }
-
+    localStorage.setItem("appCharts", JSON.stringify(charts));
   }, [charts]);
 
   // Detect dataset type based on column names
@@ -1028,21 +1004,53 @@ function App() {
       "normal"
     );
 
-    const findings = [
+    const findings =
+      chatHistory
+        .slice(-10)
+        .map(m => m.text)
 
-      `The dataset contains ${datasetInfo.rows || 0} records with ${
-        datasetInfo.columns?.length || 0
-      } analytical features for evaluation.`,
+        // remove weird unicode
+        .map(t =>
+          t.replace(/[^\x00-\x7F]/g, "")
+        )
 
-      `Visual analysis identified measurable variation and distribution patterns across multiple variables.`,
+        // remove failed messages
+        .filter(t =>
+          t &&
+          !t.toLowerCase().includes("failed") &&
+          !t.includes("Ø") &&
+          !t.includes("❌")
+        )
 
-      `AI-generated filtering operations detected high-value records and feature-specific thresholds within the dataset.`,
+        // make text cleaner
+        .map(t => {
 
-      `Comparative chart visualizations highlighted relationships between numerical variables and category distributions.`,
+          const lower = t.toLowerCase();
 
-      `The analytics engine successfully processed NLP-driven queries and generated dynamic visual outputs.`
+          if (lower.includes("bar chart")) {
+            return `The comparative analysis revealed measurable variation between the selected variables, indicating possible correlation patterns and distribution differences across categories.`;
+          }
 
-    ];
+          if (lower.includes("pie chart")) {
+            return `The proportional distribution analysis identified dominant contributing segments within the dataset, highlighting category imbalance and concentration trends.`;
+          }
+
+          if (lower.includes("scatter")) {
+            return `Scatter plot analysis suggests potential relationships and clustering behavior between the selected numerical variables.`;
+          }
+
+          if (lower.includes("prediction")) {
+            return `The predictive model generated estimations based on learned historical feature relationships from the dataset.`;
+          }
+
+          if (lower.includes("average")) {
+            return `Aggregate statistical analysis was performed to identify central tendency behavior within the selected feature.`;
+          }
+
+          return t;
+        })
+
+        .slice(-6);
 
     findings.forEach(f => {
 
@@ -1205,20 +1213,8 @@ function App() {
 
         y += 8;
 
-        const chartWidth = 170;
-        const chartHeight = 95;
-
-        doc.setFillColor(248,250,252);
-
-        doc.roundedRect(
-          16,
-          y - 6,
-          178,
-          74,
-          6,
-          6,
-          "F"
-        );
+        const chartWidth = 155;
+        const chartHeight = 60;
 
         doc.addImage(
           imgData,
@@ -1231,7 +1227,7 @@ function App() {
           "FAST"
         );
 
-        y += 110;
+        y += 78;
       }
     }
 
@@ -1865,9 +1861,7 @@ function App() {
                       </div>
                       <div className="result-item">
                         <label>Neural Network (Loss)</label>
-                        <div className="result-value">
-                          {parseFloat(trainResult?.nn_loss || 0).toFixed(5)}
-                        </div>
+                        <div className="result-value">{parseFloat(trainResult?.nn_loss || 0).toFixed(2)}</div>
                       </div>
                     </div>
                   </div>

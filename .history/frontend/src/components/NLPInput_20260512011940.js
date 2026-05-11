@@ -136,9 +136,7 @@ function NLPInput({
               "br",
               "barchart"
             ])
-          ) {
-            chartType = "bar";
-          }
+          )
 
           const numericOnlyCharts = ["pie", "bar"];
 

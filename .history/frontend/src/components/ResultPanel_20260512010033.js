@@ -32,17 +32,19 @@ function ResultPanel({ result }) {
 
     const exportChart = async () => {
 
-        const el = document.querySelector(".viz-chart canvas");
+        const el = document.querySelector(".viz-chart");
 
         if (!el) return;
 
         const canvas = await html2canvas(el, {
-            scale: 6,
-            width: 1280,
-            height: 720,
+            scale: 5,
             useCORS: true,
             logging: false,
-            backgroundColor: "#0f172a"
+            allowTaint: true,
+            backgroundColor: "#0f172a",
+            imageTimeout: 0
+
+
         });
 
         canvas.toBlob(
@@ -311,8 +313,6 @@ function ResultPanel({ result }) {
 
                         {chartType === "bar" && (
                             <Bar
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,
@@ -324,8 +324,6 @@ function ResultPanel({ result }) {
 
                     {chartType === "line" && (
                         <Line
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,
@@ -337,8 +335,6 @@ function ResultPanel({ result }) {
 
                     {chartType === "pie" && (
                         <Pie
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,
@@ -350,8 +346,6 @@ function ResultPanel({ result }) {
 
                     {chartType === "scatter" && (
                         <Scatter
-                                width={1280}
-                                height={720}
                                 data={chartData}
                                 options={{
                                     ...commonOptions,
